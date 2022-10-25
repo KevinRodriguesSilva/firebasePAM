@@ -1,7 +1,9 @@
 import { useNavigation } from '@react-navigation/native';
 import React, {useState, useEffect}from 'react'
-import { StyleSheet, Text, View, TouchableOpacity,Button} from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity,Button} from 'react-native';
+import CardAluno from '../../componentes/cardAluno';
 import firebase from '../../firebaseConnection';
+
 
 
 
@@ -10,22 +12,36 @@ import firebase from '../../firebaseConnection';
 
 export default function Home(){
 
-const [nome, setNome] = useState('');
+const [alunos, setAlunos] = useState([]);
 
 
 
 useEffect(()=> {
 
-    async function buscarNome(){
+    async function buscarAluno(){
 
-        await firebase.database().ref('Alunos/1/Nome').on('value',(snapshot) =>{
+        await firebase.database().ref('Alunos').on('value',(snapshot) =>{
 
-            setNome(snapshot.val())
+
+            snapshot.forEach((childItem) => {
+
+                var data = {
+                    key : childItem.key,
+                    nome: childItem.val().Nome,
+                    nota1: childItem.val().Nota1,
+                    nota2: childItem.val().Nota2,
+                    nota3: childItem.val().Nota3,
+                    imagem: childItem.val().Imagem
+                }
+
+                setAlunos(alunos => [...alunos, data]);
+
+            })
 
         })
 
     }
-    buscarNome();
+    buscarAluno();
 
 }, [])
 
@@ -38,8 +54,12 @@ return(
     <View style = {{alignItems:'center'}}>
 
 
-
-      <Text>{nome}</Text>
+        <FlatList
+            data = {alunos}
+            numColumns = {2}
+            keyExtractor = { (item)=>item.key}
+            renderItem = { ({item}) =>  <CardAluno />}
+        />
 
            
 
